@@ -36,6 +36,8 @@ class InputDialog(QtGui.QDialog):
             self.data[name] = widget
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
+        
+        self.fields = fields
     
     def add_buttons(self):
         ok = QtGui.QPushButton('OK')
