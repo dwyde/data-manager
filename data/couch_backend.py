@@ -25,6 +25,6 @@ class CouchBackend:
     
     def get_data(self, fields):
         for row in self.db.view('_all_docs', include_docs=True):
-            data = [row.doc.get(x[0]) for x in fields]
+            data = [row.doc.get(x.name) for x in fields]
             yield map(str, data)
             

@@ -21,7 +21,7 @@ class TableDisplay(QtGui.QWidget):
         
     def create_table(self):
         self.table_model = QtGui.QStandardItemModel(0, len(self.fields))
-        headers = QtCore.QStringList([x[0] for x in self.fields])
+        headers = QtCore.QStringList([x.name for x in self.fields])
         self.table_model.setHorizontalHeaderLabels(headers)
         
         data = self.backend.get_data(self.fields)
@@ -33,11 +33,16 @@ class TableDisplay(QtGui.QWidget):
         self.table_view = QtGui.QTableView()
         self.table_view.setModel(self.table_model)
 
+class Field:
+    def __init__(self, name, data_type):
+        self.name = name
+        self.type = data_type        
+
 def main():
         job_fields = (
-            ('Name', str),
-            ('Specialties', list),
-            ('GRE General', bool),
+            Field('Name', str),
+            Field('Specialties', list),
+            Field('GRE General', bool),
         )
         backend = CouchBackend('data')
         
