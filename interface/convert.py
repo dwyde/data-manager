@@ -2,7 +2,7 @@ import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 sys.path.append('../data/')
-from couch_backend import backend_save
+from couch_backend import CouchBackend
 
 
 class InputDialog(QtGui.QDialog):
@@ -50,24 +50,35 @@ class InputDialog(QtGui.QDialog):
         self.connect(ok, QtCore.SIGNAL('clicked()'), self.save_data)
         self.connect(cancel, QtCore.SIGNAL('clicked()'), self.close)
     
+    def qstring_to_str(self, value):
+        if type(value) == QtCore.QString:
+            return str(value)
+        elif type(value) == QtCore.QStringList:
+            print 'qstringlist'
+            return [str(x) for x in value]
+        else:
+            return value
+    
     def save_data(self):
         data = {}
         for k, v in self.data.iteritems():
             method = getattr(v, self.getters[type(v)])
-            data[k] = method()
+            value = method()
+            data[k] = self.qstring_to_str(value)
         print data
-        backend_save(data)
+        self.backend.save(data)
         self.close()
 
 def main():
         job_fields = (
-            ('Name', str), 
+            ('Name', str),
             ('Specialties', list),
             ('GRE General', bool),
         )
         app = QtGui.QApplication(sys.argv)
         icon = InputDialog()
         icon.fields_to_qt(job_fields)
+        icon.backend = CouchBackend('data')
         icon.show()
         sys.exit(app.exec_())
 
