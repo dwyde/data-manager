@@ -13,13 +13,11 @@ class TableDisplay(QtGui.QWidget):
         
         self.fields = fields
         self.backend = backend
-        self.create_table()
         
-        self.mainLayout = QtGui.QVBoxLayout()
-        self.mainLayout.addWidget(self.table_view)
-        self.setLayout(self.mainLayout)
+        self.create_table_model()
+        self.create_layout()
         
-    def create_table(self):
+    def create_table_model(self):
         self.table_model = QtGui.QStandardItemModel(0, len(self.fields))
         headers = QtCore.QStringList([x.name for x in self.fields])
         self.table_model.setHorizontalHeaderLabels(headers)
@@ -29,14 +27,21 @@ class TableDisplay(QtGui.QWidget):
             items = map(QtGui.QStandardItem, row)
             map(lambda x: x.setEditable(False), items)
             self.table_model.appendRow(items)
-        
+    
+    def create_layout(self):
         self.table_view = QtGui.QTableView()
         self.table_view.setModel(self.table_model)
+        
+        
+        
+        self.mainLayout = QtGui.QVBoxLayout()
+        self.mainLayout.addWidget(self.table_view)
+        self.setLayout(self.mainLayout)
 
 class Field:
     def __init__(self, name, data_type):
         self.name = name
-        self.type = data_type        
+        self.type = data_type
 
 def main():
         job_fields = (
