@@ -30,10 +30,10 @@ class InputDialog(QtGui.QDialog):
         
     def fields_to_qt(self, fields):
         self.formLayout = QtGui.QFormLayout()
-        for name, field_type in fields:
-            widget = self.field_dict[field_type]()
-            self.formLayout.addRow(name, widget)
-            self.data[name] = widget
+        for field in fields:
+            widget = self.field_dict[field.type]()
+            self.formLayout.addRow(field.name, widget)
+            self.data[field.name] = widget
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
         

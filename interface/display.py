@@ -3,8 +3,9 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 sys.path.append('../data/')
 from couch_backend import CouchBackend
+from convert import InputDialog
 
-class TableDisplay(QtGui.QWidget):
+class TableDisplay(QtGui.QMainWindow):
     def __init__(self, fields, backend, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
@@ -15,6 +16,7 @@ class TableDisplay(QtGui.QWidget):
         self.backend = backend
         
         self.create_table_model()
+        self.create_toolbar()
         self.create_layout()
         
     def create_table_model(self):
@@ -28,15 +30,28 @@ class TableDisplay(QtGui.QWidget):
             map(lambda x: x.setEditable(False), items)
             self.table_model.appendRow(items)
     
+    def create_toolbar(self):
+        exit = QtGui.QAction(QtGui.QIcon('icons/exit.png'), 'New', self)
+        exit.setShortcut('Ctrl+N')
+        self.connect(exit, QtCore.SIGNAL('triggered()'), self.new_dialog)
+
+        self.toolbar = self.addToolBar('Exit')
+        self.toolbar.addAction(exit)
+    
     def create_layout(self):
         self.table_view = QtGui.QTableView()
         self.table_view.setModel(self.table_model)
         
-        
-        
         self.mainLayout = QtGui.QVBoxLayout()
-        self.mainLayout.addWidget(self.table_view)
-        self.setLayout(self.mainLayout)
+        self.setCentralWidget(self.table_view)
+        #self.mainLayout.addWidget(self.toolbar)
+        #self.setLayout(self.mainLayout)
+    
+    def new_dialog(self):
+        dialog = InputDialog(parent=self)
+        dialog.fields_to_qt(self.fields)
+        dialog.backend = self.backend
+        dialog.show()
 
 class Field:
     def __init__(self, name, data_type):
