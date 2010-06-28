@@ -62,7 +62,9 @@ class TableDisplay(QtGui.QMainWindow):
     def edit_dialog(self):
         row_list = self.table_view.selectionModel().selectedRows()
         row_num = row_list[0].row()
-        row = self.table_model.takeRow(row_num)
+        #row = self.table_model.takeRow(row_num)
+        col_count = self.table_model.columnCount()
+        row = [self.table_model.item(row_num, i) for i in range(col_count)]
         data = map(lambda x: x.data(role=QtCore.Qt.DisplayRole).toString(), row)
         print data
         
