@@ -18,7 +18,7 @@ class InputDialog(QtGui.QDialog):
         QtGui.QRadioButton : 'isChecked',
     }
     
-    def __init__(self, parent=None):
+    def __init__(self, fields, backend, parent=None):
         QtGui.QDialog.__init__(self, parent)
 
         self.setGeometry(300, 300, 350, 300)
@@ -26,18 +26,26 @@ class InputDialog(QtGui.QDialog):
         self.mainLayout = QtGui.QVBoxLayout()
         self.setLayout(self.mainLayout)
         
-        self.data = {}
+        self.fields = fields
+        self.backend = backend
+    
+    def set_data(self, data):
+        if data == None:
+            self.defaults = ['' for x in self.fields]
+        else:
+            self.defaults = data
         
-    def fields_to_qt(self, fields):
+        self.fields_to_qt()
+    
+    def fields_to_qt(self):
+        self.data = {}
         self.formLayout = QtGui.QFormLayout()
-        for field in fields:
-            widget = self.field_dict[field.type]()
+        for field, value in zip(self.fields, self.defaults):
+            widget = self.field_dict[field.type](value)
             self.formLayout.addRow(field.name, widget)
             self.data[field.name] = widget
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
-        
-        self.fields = fields
     
     def add_buttons(self):
         ok = QtGui.QPushButton('OK')
