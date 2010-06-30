@@ -1,7 +1,8 @@
 import sys
 from PyQt4 import QtGui
 
-from interface import tabbed_widget, table_display
+from interface.tabbed_widget import TabbedWidget
+from interface.table_display import TableDisplay
 from data.couch_backend import CouchBackend
 from data.util import Field
 
@@ -21,10 +22,10 @@ if __name__ == '__main__':
     
     app = QtGui.QApplication(sys.argv)
     
-    jobs = table_display.TableDisplay(job_fields, job_backend)
-    schools = table_display.TableDisplay(school_fields, school_backend)
+    jobs = TableDisplay(job_fields, job_backend)
+    schools = TableDisplay(school_fields, school_backend)
     
-    td = tabbed_widget.TabbedWidget()
+    td = TabbedWidget()
     td.addTab(jobs, 'Jobs')
     td.addTab(schools, 'Schools')
     td.show()
