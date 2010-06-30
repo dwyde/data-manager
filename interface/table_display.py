@@ -1,18 +1,15 @@
 import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
-sys.path.append('../data/')
+sys.path.append('data/')
 from couch_backend import CouchBackend
-from convert import InputDialog
+from dialog import InputDialog
 
-ICON_DIR = '../icons/'
+ICON_DIR = 'icons/'
 
 class TableDisplay(QtGui.QMainWindow):
     def __init__(self, fields, backend, parent=None):
-        QtGui.QWidget.__init__(self, parent)
-
-        self.setGeometry(300, 300, 800, 600)
-        self.setWindowTitle('Data Display')
+        QtGui.QMainWindow.__init__(self, parent)
         
         self.fields = fields
         self.backend = backend
@@ -92,24 +89,3 @@ class TableDisplay(QtGui.QMainWindow):
         map(lambda x: x.setEditable(False), items)
         return items
         
-
-class Field:
-    def __init__(self, name, data_type):
-        self.name = name
-        self.type = data_type
-
-def main():
-        job_fields = (
-            Field('Name', str),
-            Field('Specialties', list),
-            Field('GRE General', bool),
-        )
-        backend = CouchBackend('data')
-        
-        app = QtGui.QApplication(sys.argv)
-        icon = TableDisplay(job_fields, backend)
-        icon.show()
-        sys.exit(app.exec_())
-
-if __name__ == '__main__':
-        main()
