@@ -46,20 +46,7 @@ class InputDialog(QtGui.QDialog):
         self.formLayout = QtGui.QFormLayout()
         for field, value in zip(self.fields, self.defaults):
             widget = self.field_dict[field.type]()
-            try:
-                if value == 'True':
-                    tf = True
-                else:
-                    tf = False
-                widget.setChecked(tf)
-            except AttributeError:
-                try:
-                    map(widget.append, value.split('\n'))
-                except AttributeError:
-                    try:
-                        widget.setValue(widget.valueFromText(value))
-                    except AttributeError:
-                        widget.setText(value)
+            self.proper_widget_value(widget, value)
             self.formLayout.addRow(field.name, widget)
             self.data[field.name] = widget
         
@@ -68,6 +55,24 @@ class InputDialog(QtGui.QDialog):
             self.formLayout.itemAt(1).widget().setReadOnly(True)
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
+    
+    def proper_widget_value(self, widget, value):
+        try:
+            if value == 'True':
+                tf = True
+            else:
+                tf = False
+            widget.setChecked(tf)
+        except AttributeError:
+            pass
+        try:
+            map(widget.append, value.split('\n'))
+        except AttributeError:
+            pass
+        try:
+            widget.setValue(widget.valueFromText(value))
+        except AttributeError:
+            widget.setText(value)
     
     def add_buttons(self):
         ok = QtGui.QPushButton('OK')
