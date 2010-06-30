@@ -10,12 +10,14 @@ class InputDialog(QtGui.QDialog):
         str: QtGui.QLineEdit,
         list: QtGui.QTextEdit,
         bool: QtGui.QCheckBox,
+        int: QtGui.QSpinBox,
     }
     
     getters = {
         QtGui.QLineEdit : 'displayText',
         QtGui.QTextEdit : 'toPlainText',
         QtGui.QCheckBox : 'isChecked',
+        QtGui.QSpinBox  : 'value',
     }
     
     def __init__(self, fields, backend, parent=None):
@@ -54,7 +56,10 @@ class InputDialog(QtGui.QDialog):
                 try:
                     map(widget.append, value.split('\n'))
                 except AttributeError:
-                    widget.setText(value)
+                    try:
+                        widget.setValue(widget.valueFromText(value))
+                    except AttributeError:
+                        widget.setText(value)
             self.formLayout.addRow(field.name, widget)
             self.data[field.name] = widget
         
