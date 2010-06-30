@@ -1,8 +1,6 @@
-* toolbar/menubar/buttons for UI
-* edit: read existing values into dialog, update couch, update table
+* display new dialogs that are saved
 * fill in actual fields
 * separate tabs for jobs and schools
 
 ...
-* highlight whole row when clicking any of it?
-
+* Oxygen icon license

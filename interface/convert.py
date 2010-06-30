@@ -9,13 +9,13 @@ class InputDialog(QtGui.QDialog):
     field_dict = {
         str: QtGui.QLineEdit,
         list: QtGui.QTextEdit,
-        bool: QtGui.QRadioButton,
+        bool: QtGui.QCheckBox,
     }
     
     getters = {
         QtGui.QLineEdit : 'displayText',
         QtGui.QTextEdit : 'toPlainText',
-        QtGui.QRadioButton : 'isChecked',
+        QtGui.QCheckBox : 'isChecked',
     }
     
     def __init__(self, fields, backend, parent=None):
@@ -30,7 +30,9 @@ class InputDialog(QtGui.QDialog):
         self.backend = backend
     
     def set_data(self, data):
-        if data == None:
+        # Save a reference to data, so we can pass back the ID of a new row
+        self._old_data = data
+        if data == []:
             self.defaults = ['' for x in self.fields]
         else:
             self.defaults = data
@@ -41,9 +43,24 @@ class InputDialog(QtGui.QDialog):
         self.data = {}
         self.formLayout = QtGui.QFormLayout()
         for field, value in zip(self.fields, self.defaults):
-            widget = self.field_dict[field.type](value)
+            widget = self.field_dict[field.type]()
+            try:
+                if value == 'True':
+                    tf = True
+                else:
+                    tf = False
+                widget.setChecked(tf)
+            except AttributeError:
+                try:
+                    map(widget.append, value.split('\n'))
+                except AttributeError:
+                    widget.setText(value)
             self.formLayout.addRow(field.name, widget)
             self.data[field.name] = widget
+        
+        # Edit dialogs cannot have their ID (name) changed.
+        if self.defaults[0] != '': 
+            self.formLayout.itemAt(1).widget().setReadOnly(True)
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
     
@@ -58,13 +75,13 @@ class InputDialog(QtGui.QDialog):
         
         self.mainLayout.addLayout(hbox)
         self.connect(ok, QtCore.SIGNAL('clicked()'), self.save_data)
-        self.connect(cancel, QtCore.SIGNAL('clicked()'), self.close)
+        self.connect(cancel, QtCore.SIGNAL('clicked()'), self.reject)
     
     def qstring_to_str(self, value):
-        if type(value) == QtCore.QString:
+        vtype = type(value)
+        if vtype == QtCore.QString:
             return str(value)
-        elif type(value) == QtCore.QStringList:
-            print 'qstringlist'
+        elif vtype == QtCore.QStringList:
             return [str(x) for x in value]
         else:
             return value
@@ -75,9 +92,10 @@ class InputDialog(QtGui.QDialog):
             method = getattr(v, self.getters[type(v)])
             value = method()
             data[k] = self.qstring_to_str(value)
-        print data
+        if self._old_data == []:
+            self._old_data.extend([data[f.name] for f in self.fields])
         self.backend.save(data)
-        self.close()
+        self.accept()
 
 def main():
         job_fields = (
