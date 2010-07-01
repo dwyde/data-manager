@@ -1,5 +1,6 @@
 * fill in actual fields
-* QDateEdit?
+* delete in the toolbar: use couch_backend.delete_by_id()??  Delete THAT if not.
 
 ...
 * Oxygen icon license
+* QDateEdit?

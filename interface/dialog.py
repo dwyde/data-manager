@@ -97,6 +97,8 @@ class InputDialog(QtGui.QDialog):
             return value
     
     def save_data(self):
+        if not self.has_id():
+            return
         data = {}
         for k, v in self.data.iteritems():
             method = getattr(v, self.getters[type(v)])
@@ -106,6 +108,13 @@ class InputDialog(QtGui.QDialog):
             self._old_data.extend([data[f.name] for f in self.fields])
         self.backend.save(data)
         self.accept()
+
+    def has_id(self):
+        id_field = self.fields[0].name
+        if self.data[id_field].displayText() == '':
+            return False
+        else:
+            return True
 
 def main():
         job_fields = (

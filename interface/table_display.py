@@ -45,10 +45,15 @@ class TableDisplay(QtGui.QMainWindow):
         edit = QtGui.QAction(QtGui.QIcon(ICON_DIR + 'edit.png'), 'Edit', self)
         edit.setShortcut('Ctrl+E')
         self.connect(edit, QtCore.SIGNAL('triggered()'), self.edit_dialog)
+        
+        delete = QtGui.QAction(QtGui.QIcon(ICON_DIR + 'delete.png'), 'Delete', self)
+        delete.setShortcut('Delete')
+        self.connect(delete, QtCore.SIGNAL('triggered()'), self.delete_dialog)
 
         self.toolbar = self.addToolBar('Modify')
         self.toolbar.addAction(create)
         self.toolbar.addAction(edit)
+        self.toolbar.addAction(delete)
     
     def create_layout(self):
         '''Initialize a view for an existing table model.'''
@@ -77,11 +82,8 @@ class TableDisplay(QtGui.QMainWindow):
     def edit_dialog(self):
         '''A dialog for editing an existing row.'''
         
-        # Get the current row, or bail out if nothing is selected.
-        row_list = self.table_view.selectionModel().selectedRows()
-        try:
-            row_num = row_list[0].row()
-        except IndexError:
+        row_num = self.current_row_num()
+        if row_num == None:
             return
         
         # Get a highlighted row's values as a list of strings.
@@ -95,6 +97,9 @@ class TableDisplay(QtGui.QMainWindow):
         ret = dialog.exec_()
         if ret == QtGui.QDialog.Accepted:
             self.recycle_row(row_num)
+    
+    def delete_dialog(self):
+        pass
     
     def recycle_row(self, row_num):
         '''
@@ -118,4 +123,15 @@ class TableDisplay(QtGui.QMainWindow):
         items = map(QtGui.QStandardItem, [str(x) for x in raw_items])
         map(lambda x: x.setEditable(False), items)
         return items
-        
+    
+    def current_row_num(self):
+        '''
+        Get the index of the currently-selected row.
+        @return: The index of the current row, or "None" if nothing is selected.
+        '''
+        row_list = self.table_view.selectionModel().selectedRows()
+        try:
+            return row_list[0].row()
+        except IndexError:
+            return None
+    
