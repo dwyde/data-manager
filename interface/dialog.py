@@ -2,6 +2,19 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from couch_backend import CouchBackend
 
+def _QCheckBox_fill(widget, value):
+    if value == 'True':
+        tf = True
+    else:
+        tf = False
+    widget.setChecked(tf)
+
+def _QTextEdit_fill(widget, value):
+    map(widget.append, value.split('\n'))
+    
+def _QSpinBox_fill(widget, value):
+    widget.setValue(widget.valueFromText(value))
+
 class InputDialog(QtGui.QDialog):
     field_dict = {
         str: QtGui.QLineEdit,
@@ -10,11 +23,11 @@ class InputDialog(QtGui.QDialog):
         int: QtGui.QSpinBox,
     }
     
-    getters = {
-        QtGui.QLineEdit : 'displayText',
-        QtGui.QTextEdit : 'toPlainText',
-        QtGui.QCheckBox : 'isChecked',
-        QtGui.QSpinBox  : 'value',
+    methods = {
+        QtGui.QLineEdit : dict(get='displayText', set='setText'),
+        QtGui.QTextEdit : dict(get='toPlainText', set=_QTextEdit_fill),
+        QtGui.QCheckBox : dict(get='isChecked', set=_QCheckBox_fill),
+        QtGui.QSpinBox  : dict(get='value', set=_QSpinBox_fill),
     }
     
     def __init__(self, fields, backend, parent=None):
@@ -54,22 +67,12 @@ class InputDialog(QtGui.QDialog):
         self.add_buttons()
     
     def proper_widget_value(self, widget, value):
+        method = self.methods[type(widget)]['set']
         try:
-            if value == 'True':
-                tf = True
-            else:
-                tf = False
-            widget.setChecked(tf)
-        except AttributeError:
-            pass
-        try:
-            map(widget.append, value.split('\n'))
-        except AttributeError:
-            pass
-        try:
-            widget.setValue(widget.valueFromText(value))
-        except AttributeError:
-            widget.setText(value)
+            to_call = getattr(widget, method)
+            to_call(value)
+        except (AttributeError, TypeError):
+            method(widget, value)
     
     def add_buttons(self):
         ok = QtGui.QPushButton('OK')
@@ -98,7 +101,7 @@ class InputDialog(QtGui.QDialog):
             return
         data = {}
         for k, v in self.data.iteritems():
-            method = getattr(v, self.getters[type(v)])
+            method = getattr(v, self.methods[type(v)]['get'])
             value = method()
             data[k] = self.qstring_to_str(value)
         if self._old_data == []:
