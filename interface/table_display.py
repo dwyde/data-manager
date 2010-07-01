@@ -82,6 +82,7 @@ class TableDisplay(QtGui.QMainWindow):
     def edit_dialog(self):
         '''A dialog for editing an existing row.'''
         
+        # Check that a row is highlighted
         row_num = self.current_row_num()
         if row_num == None:
             return
@@ -99,7 +100,23 @@ class TableDisplay(QtGui.QMainWindow):
             self.recycle_row(row_num)
     
     def delete_dialog(self):
-        pass
+        '''Delete the current row, if given user approval.'''
+        
+        row_num = self.current_row_num()
+        if row_num == None:
+            return
+        
+        reply = QtGui.QMessageBox.question(self, 'Delete entry?',
+            "Are you sure that you want to delete the highlighted row?", 
+            QtGui.QMessageBox.No|QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            # Go ahead and delete
+            id_field = self.table_model.item(row_num, 0)
+            name = id_field.data(role=QtCore.Qt.DisplayRole).toString()
+            self.backend.delete_by_id(str(name))
+            
+            # Remove row from the table model and view
+            self.table_model.takeRow(row_num)
     
     def recycle_row(self, row_num):
         '''

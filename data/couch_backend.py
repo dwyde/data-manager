@@ -75,7 +75,8 @@ class CouchBackend:
         @param name: An ID of a document to be deleted
         '''
         
+        safe = self._safe_name(name, self.bad_docname_chars)
         try:
-            del self.db[name]
+            del self.db[safe]
         except couchdb.client.ResourceNotFound:
             print 'Can\'t delete document with id "%s"' % (name,)
