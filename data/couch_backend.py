@@ -79,4 +79,4 @@ class CouchBackend:
         try:
             del self.db[safe]
         except couchdb.client.ResourceNotFound:
-            print 'Can\'t delete document with id "%s"' % (name,)
+            pass

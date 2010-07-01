@@ -1,9 +1,6 @@
-import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
-sys.path.append('../data/')
 from couch_backend import CouchBackend
-
 
 class InputDialog(QtGui.QDialog):
     field_dict = {
@@ -115,20 +112,4 @@ class InputDialog(QtGui.QDialog):
             return False
         else:
             return True
-
-def main():
-        job_fields = (
-            ('Name', str),
-            ('Specialties', list),
-            ('GRE General', bool),
-        )
-        app = QtGui.QApplication(sys.argv)
-        icon = InputDialog()
-        icon.fields_to_qt(job_fields)
-        icon.backend = CouchBackend('data')
-        icon.show()
-        sys.exit(app.exec_())
-
-if __name__ == '__main__':
-        main()
- 
+            
