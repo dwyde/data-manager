@@ -70,9 +70,10 @@ class InputDialog(QtGui.QDialog):
         int: QSpinBoxWrap,
     }
     
-    def __init__(self, fields, backend, parent=None):
+    def __init__(self, dialog_type, fields, backend, parent=None):
         '''
         Constructor for InputDialog class.
+        @param dialog_type: 'NEW' or 'EDIT'
         @param fields: A tuple of objects mapping a field name to a Python data type
         @param backend: A database storage backend, such as CouchDB
         '''
@@ -84,6 +85,7 @@ class InputDialog(QtGui.QDialog):
         self.mainLayout = QtGui.QVBoxLayout()
         self.setLayout(self.mainLayout)
         
+        self.type = dialog_type
         self.fields = fields
         self.backend = backend
     
@@ -94,11 +96,11 @@ class InputDialog(QtGui.QDialog):
         @param data: A list of of values, corresponding to a row in the database
         '''
         
-        self._old_data = data
-        if data == []:
+        if self.type == 'NEW':
             self.defaults = ['' for x in self.fields]
         else:
             self.defaults = data
+        self._old_data = data
         
         self.fields_to_qt()
     
@@ -117,7 +119,7 @@ class InputDialog(QtGui.QDialog):
             self.data[field.name] = widget
         
         # Edit dialogs cannot have their ID (name) changed.
-        if self.defaults[0] != '': 
+        if self.type == 'EDIT': 
             self.formLayout.itemAt(1).widget().setReadOnly(True)
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
@@ -160,23 +162,29 @@ class InputDialog(QtGui.QDialog):
         '''
 
         # Only accept if the ID field ("Name") is filled in.
-        if not self.has_id():
+        if not self.valid_id():
             return
         data = {}
         for name, widget in self.data.iteritems():
             value = widget.get()
             data[name] = self.qstring_to_str(value)
+        
         # Pass old data back to the main program (it needs the original ID)
-        if self._old_data == []:
-            self._old_data.extend([data[f.name] for f in self.fields])
+        self._old_data.extend([data[f.name] for f in self.fields])
+        
         self.backend.save(data)
         self.accept()
 
-    def has_id(self):
-        '''Determine if the ID (Name) field is filled in.'''
+    def valid_id(self):
+        '''Determine if the ID (Name) field is filled in properly.'''
         
         id_field = self.fields[0].name
-        if self.data[id_field].displayText() == '':
+        name = self.data[id_field].displayText()
+        row = self.backend.get_row_by_id(str(name), self.fields)
+        if name == '':
             return False
+        elif row != [] and self.type == 'NEW': # ID already in use
+            QtGui.QMessageBox.question(self, 'Warning',
+                    'That ID (%s) is already in use.' % self.fields[0].name)
         else:
             return True

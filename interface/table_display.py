@@ -73,7 +73,7 @@ class TableDisplay(QtGui.QMainWindow):
         Perhaps this is a hack, but it seems to work okay.
         '''
         
-        dialog = InputDialog(self.fields, self.backend, parent=self)
+        dialog = InputDialog('NEW', self.fields, self.backend, parent=self)
         data = [] # Pass a created row back through this variable
         dialog.set_data(data)
         ret = dialog.exec_()
@@ -95,7 +95,7 @@ class TableDisplay(QtGui.QMainWindow):
         data = map(lambda x: x.data(role=QtCore.Qt.DisplayRole).toString(), row)
         
         # Create and display an edit dialog.
-        dialog = InputDialog(self.fields, self.backend, parent=self)
+        dialog = InputDialog('EDIT', self.fields, self.backend, parent=self)
         dialog.set_data(data)
         ret = dialog.exec_()
         if ret == QtGui.QDialog.Accepted:
@@ -109,7 +109,7 @@ class TableDisplay(QtGui.QMainWindow):
             return
         
         reply = QtGui.QMessageBox.question(self, 'Delete entry?',
-            "Are you sure that you want to delete the highlighted row?", 
+            'Are you sure that you want to delete the highlighted row?', 
             QtGui.QMessageBox.No|QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
             # Go ahead and delete

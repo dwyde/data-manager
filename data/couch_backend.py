@@ -69,7 +69,12 @@ class CouchBackend:
         '''
         
         safe = self._safe_name(name, self.bad_docname_chars)
-        return [self.db[safe][f.name] for f in fields]
+        try:
+            row = [self.db[safe][f.name] for f in fields]
+            return row
+        except (KeyError, couchdb.ResourceNotFound):
+            return []
+        
     
     def delete_by_id(self, name):
         '''
