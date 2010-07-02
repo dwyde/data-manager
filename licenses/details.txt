@@ -1,0 +1,6 @@
+These contents of the "icons/" folder are from the Oxygen icon theme, dual licensed under:
+* the GNU Library General Public License, and
+* the Creative Commons Attribution-ShareAlike 3.0 License
+
+Everything else is: 
+Copyright 2010, David Wyde

@@ -1,10 +1,12 @@
+'''Define fields for the application, and actually run the program.'''
+
 import sys
 from PyQt4 import QtGui
 
 from interface.tabbed_widget import TabbedWidget
 from interface.table_display import TableDisplay
 from data.couch_backend import CouchBackend
-from data.util import Field
+from data import Field
 
 # Define fields, for both the displays and the database.
 school_fields = (

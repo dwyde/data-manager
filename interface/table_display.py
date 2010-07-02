@@ -1,9 +1,7 @@
 '''Display, edit, or add to a list view of items.'''
 
-import sys
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-sys.path.append('data/')
+from PyQt4 import QtGui, QtCore
+from interface import NEW_DIALOG, EDIT_DIALOG
 from couch_backend import CouchBackend
 from dialog import InputDialog
 
@@ -73,7 +71,7 @@ class TableDisplay(QtGui.QMainWindow):
         Perhaps this is a hack, but it seems to work okay.
         '''
         
-        dialog = InputDialog('NEW', self.fields, self.backend, parent=self)
+        dialog = InputDialog(NEW_DIALOG, self.fields, self.backend, parent=self)
         data = [] # Pass a created row back through this variable
         dialog.set_data(data)
         ret = dialog.exec_()
@@ -95,7 +93,7 @@ class TableDisplay(QtGui.QMainWindow):
         data = map(lambda x: x.data(role=QtCore.Qt.DisplayRole).toString(), row)
         
         # Create and display an edit dialog.
-        dialog = InputDialog('EDIT', self.fields, self.backend, parent=self)
+        dialog = InputDialog(EDIT_DIALOG, self.fields, self.backend, parent=self)
         dialog.set_data(data)
         ret = dialog.exec_()
         if ret == QtGui.QDialog.Accepted:

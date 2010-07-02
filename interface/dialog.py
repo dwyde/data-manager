@@ -4,6 +4,7 @@ Display a dialog for adding new entries and editing existing ones.
 
 from PyQt4 import QtGui
 from PyQt4 import QtCore
+from interface import NEW_DIALOG, EDIT_DIALOG
 from couch_backend import CouchBackend
 
 # Widget wrappers: simplify getting and setting of values for different widgets.
@@ -96,7 +97,7 @@ class InputDialog(QtGui.QDialog):
         @param data: A list of of values, corresponding to a row in the database
         '''
         
-        if self.type == 'NEW':
+        if self.type == NEW_DIALOG:
             self.defaults = ['' for x in self.fields]
         else:
             self.defaults = data
@@ -119,7 +120,7 @@ class InputDialog(QtGui.QDialog):
             self.data[field.name] = widget
         
         # Edit dialogs cannot have their ID (name) changed.
-        if self.type == 'EDIT': 
+        if self.type == EDIT_DIALOG: 
             self.formLayout.itemAt(1).widget().setReadOnly(True)
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
@@ -183,7 +184,7 @@ class InputDialog(QtGui.QDialog):
         row = self.backend.get_row_by_id(str(name), self.fields)
         if name == '':
             return False
-        elif row != [] and self.type == 'NEW': # ID already in use
+        elif row != [] and self.type == NEW_DIALOG: # ID already in use
             QtGui.QMessageBox.question(self, 'Warning',
                     'That ID (%s) is already in use.' % self.fields[0].name)
         else:
