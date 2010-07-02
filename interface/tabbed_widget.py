@@ -1,3 +1,5 @@
+'''A very basic "notebook" widget, with the capacity for multiple tabs.'''
+
 from PyQt4 import QtGui
 
 class TabbedWidget(QtGui.QTabWidget):

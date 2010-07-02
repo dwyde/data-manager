@@ -1,3 +1,5 @@
+'''Use CouchDB to store rows of data, with the first column (Name) as the ID.'''
+
 import couchdb
 import re
 

@@ -1,3 +1,5 @@
+'''Display, edit, or add to a list view of items.'''
+
 import sys
 from PyQt4 import QtGui
 from PyQt4 import QtCore
