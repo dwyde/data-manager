@@ -43,10 +43,7 @@ class CouchBackend:
         '''
         
         doc_id = self._safe_name(data['Name'], self.bad_docname_chars)
-        try:
-            del self.db[doc_id]
-        except couchdb.client.ResourceNotFound:
-            pass
+        self.delete_by_id(doc_id)
         self.db[doc_id] = data
     
     def get_data(self, fields):
