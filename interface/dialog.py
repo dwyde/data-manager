@@ -1,58 +1,82 @@
+'''
+Display a dialog for adding new entries and editing existing ones.
+'''
+
 from PyQt4 import QtGui
 from PyQt4 import QtCore
 from couch_backend import CouchBackend
 
-class QWidgetMethods:
-    pass
-
-class QLineEditMethods(QWidgetMethods):
-    def get(self, widget):
-        return widget.displayText()
+# Widget wrappers: simplify getting and setting of values for different widgets.
+class QLineEditWrap(QtGui.QLineEdit):
+    '''A thin wrapper around a QLineEdit widget.'''
     
-    def set(self, widget, value):
-        widget.setText(value)
-
-class QTextEditMethods(QWidgetMethods):
-    def get(self, widget):
-        return widget.toPlainText()
-        
-    def set(self, widget, value):
-        map(widget.append, value.split('\n'))
+    def __init__(self, parent=None):
+        QtGui.QLineEdit.__init__(self, parent)
     
-class QCheckBoxMethods(QWidgetMethods):
-    def get(self, widget):
-        return widget.isChecked()
+    def get(self):
+        return self.displayText()
+    
+    def set(self, value):
+        self.setText(value)
+
+class QTextEditWrap(QtGui.QTextEdit):
+    '''A thin wrapper around a QTextEdit widget.'''
+    
+    def __init__(self, parent=None):
+        QtGui.QTextEdit.__init__(self, parent)
         
-    def set(self, widget, value):
+    def get(self):
+        return self.toPlainText()
+        
+    def set(self, value):
+        map(self.append, value.split('\n')) # Display newlines correctly
+    
+class QCheckBoxWrap(QtGui.QCheckBox):
+    '''A thin wrapper around a QCheckBox widget.'''
+    
+    def __init__(self, parent=None):
+        QtGui.QCheckBox.__init__(self, parent)
+        
+    def get(self):
+        return self.isChecked()
+        
+    def set(self, value):
         if value == 'True':
             tf = True
         else:
             tf = False
-        widget.setChecked(tf)
+        self.setChecked(tf)
 
-class QSpinBoxMethods(QWidgetMethods):
-    def get(self, widget):
-        return widget.value()
+class QSpinBoxWrap(QtGui.QSpinBox):
+    '''A thin wrapper around a QSpinBox widget.'''
+    
+    def __init__(self, parent=None):
+        QtGui.QSpinBox.__init__(self, parent)
         
-    def set(self, widget, value):
-        widget.setValue(widget.valueFromText(value))
+    def get(self):
+        return self.value()
+        
+    def set(self, value):
+        self.setValue(self.valueFromText(value))
 
 class InputDialog(QtGui.QDialog):
-    field_dict = {
-        str: QtGui.QLineEdit,
-        list: QtGui.QTextEdit,
-        bool: QtGui.QCheckBox,
-        int: QtGui.QSpinBox,
-    }
+    '''A dialog for adding a new entry or editing an exisitng one.'''
     
-    proxies = {
-        QtGui.QLineEdit : QLineEditMethods(),
-        QtGui.QTextEdit : QTextEditMethods(),
-        QtGui.QCheckBox : QCheckBoxMethods(),
-        QtGui.QSpinBox  : QSpinBoxMethods(),
+    # Map storage data types to QtGui widgets.
+    widgets = {
+        str: QLineEditWrap,
+        list: QTextEditWrap,
+        bool: QCheckBoxWrap,
+        int: QSpinBoxWrap,
     }
     
     def __init__(self, fields, backend, parent=None):
+        '''
+        Constructor for InputDialog class.
+        @param fields: A tuple of objects mapping a field name to a Python data type
+        @param backend: A database storage backend, such as CouchDB
+        '''
+        
         QtGui.QDialog.__init__(self, parent)
 
         self.setGeometry(300, 300, 350, 300)
@@ -64,7 +88,12 @@ class InputDialog(QtGui.QDialog):
         self.backend = backend
     
     def set_data(self, data):
-        # Save a reference to data, so we can pass back the ID of a new row
+        '''
+        Store a row of data for future editing, or fill in blanks.
+        Save a reference to data, so we can pass back the ID of a new row
+        @param data: A list of of values, corresponding to a row in the database
+        '''
+        
         self._old_data = data
         if data == []:
             self.defaults = ['' for x in self.fields]
@@ -74,11 +103,16 @@ class InputDialog(QtGui.QDialog):
         self.fields_to_qt()
     
     def fields_to_qt(self):
+        '''
+        Create an appropriate widget for each defined data field.
+        Add each widget to a QFormLayout, and store the values for later.
+        '''
+        
         self.data = {}
         self.formLayout = QtGui.QFormLayout()
         for field, value in zip(self.fields, self.defaults):
-            widget = self.field_dict[field.type]()
-            self.proper_widget_value(widget, value)
+            widget = self.widgets[field.type]()
+            widget.set(value)
             self.formLayout.addRow(field.name, widget)
             self.data[field.name] = widget
         
@@ -88,11 +122,11 @@ class InputDialog(QtGui.QDialog):
         self.mainLayout.addLayout(self.formLayout)
         self.add_buttons()
     
-    def proper_widget_value(self, widget, value):
-        methods = self.proxies[type(widget)]
-        methods.set(widget, value)
-    
     def add_buttons(self):
+        '''
+        Insert buttons into the layout, to confirm or cancel changes.
+        '''
+        
         ok = QtGui.QPushButton('OK')
         cancel = QtGui.QPushButton('Cancel')
 
@@ -106,6 +140,12 @@ class InputDialog(QtGui.QDialog):
         self.connect(cancel, QtCore.SIGNAL('clicked()'), self.reject)
     
     def qstring_to_str(self, value):
+        '''
+        Convert a PyQt QString into a regular Python string, if applicable.
+        @param value: A value that may or may not be a QString
+        @return: An appropriately-typed value
+        '''
+        
         vtype = type(value)
         if vtype == QtCore.QString:
             return str(value)
@@ -115,19 +155,26 @@ class InputDialog(QtGui.QDialog):
             return value
     
     def save_data(self):
+        '''
+        Store data from the dialog into a database backend.
+        '''
+
+        # Only accept if the ID field ("Name") is filled in.
         if not self.has_id():
             return
         data = {}
         for name, widget in self.data.iteritems():
-            methods = self.proxies[type(widget)]
-            value = methods.get(widget)
+            value = widget.get()
             data[name] = self.qstring_to_str(value)
+        # Pass old data back to the main program (it needs the original ID)
         if self._old_data == []:
             self._old_data.extend([data[f.name] for f in self.fields])
         self.backend.save(data)
         self.accept()
 
     def has_id(self):
+        '''Determine if the ID (Name) field is filled in.'''
+        
         id_field = self.fields[0].name
         if self.data[id_field].displayText() == '':
             return False
