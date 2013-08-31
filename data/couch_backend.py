@@ -22,7 +22,7 @@ class CouchBackend:
         name = self._safe_name(dbname, self.bad_dbname_chars)
         try:
             self.db = self.couch[name]
-        except couchdb.client.ResourceNotFound:
+        except couchdb.http.ResourceNotFound:
             self.db = self.couch.create(name)
     
     def _safe_name(self, name, illegal_chars):
@@ -82,5 +82,5 @@ class CouchBackend:
         safe = self._safe_name(name, self.bad_docname_chars)
         try:
             del self.db[safe]
-        except couchdb.client.ResourceNotFound:
+        except couchdb.http.ResourceNotFound:
             pass
